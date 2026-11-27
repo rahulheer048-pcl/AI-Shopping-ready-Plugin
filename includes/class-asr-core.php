@@ -28,6 +28,15 @@ class ASR_Core {
      */
     protected $admin;
 
+    /**
+     * WooCommerce compatibility checker.
+     *
+     * @var ASR_WooCommerce_Compatibility
+     */
+    protected $woocommerce_compatibility;
+
+
+
 
     /**
      * Initialize the core functionality.
@@ -52,9 +61,13 @@ class ASR_Core {
 
         require_once ASR_PLUGIN_DIR . 'admin/class-asr-admin.php';
 
+        require_once ASR_PLUGIN_DIR . 'modules/woocommerce-integration/class-asr-woocommerce-compatibility.php';
+
         $this->loader = new ASR_Loader();
 
         $this->admin = new ASR_Admin();
+
+        $this->woocommerce_compatibility = new ASR_WooCommerce_Compatibility();
 
     }
 
@@ -90,9 +103,25 @@ class ASR_Core {
      */
     private function define_module_hooks() {
 
-        // Project module hooks will be registered here.
+    // WooCommerce availability check.
+    $this->loader->add_action(
+        'plugins_loaded',
+        $this->woocommerce_compatibility,
+        'check_woocommerce',
+        20,
+        0
+    );
 
-    }
+    // WooCommerce dependency warning.
+    $this->loader->add_action(
+        'admin_notices',
+        $this->woocommerce_compatibility,
+        'display_missing_notice',
+        10,
+        0
+    );
+
+}
 
 
     /**
